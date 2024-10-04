@@ -9,6 +9,14 @@ type Enemy struct {
 	Px, Py int
 }
 
+// now the dynamic funcs are described as a string of a gamescript
+// eg attack -> attackfn
+type Player struct {
+	Name     string
+	Px, Py   int
+	Dynamics map[string]string
+}
+
 type GameState struct {
 	Enemies  []Enemy
 	Time     int
@@ -16,16 +24,3 @@ type GameState struct {
 	Arena    Arena
 	Players  []Player
 }
-
-type Player struct {
-	Name     string
-	Px, Py   int
-	Attack   func(gs GameState) GameState
-	Dynamics []StateChanger
-}
-
-type ResourceManager struct {
-	Players []Player
-}
-
-type StateChanger map[string]func(gs GameState) GameState

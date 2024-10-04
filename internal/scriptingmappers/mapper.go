@@ -36,12 +36,21 @@ func MapGameStateToLuaTable(L *lua.LState, gameState *types.GameState) *lua.LTab
 		L.SetField(playerTbl, "name", lua.LString(player.Name))
 		L.SetField(playerTbl, "px", lua.LNumber(player.Px))
 		L.SetField(playerTbl, "py", lua.LNumber(player.Py))
+
+		// Dynamics (map of string -> string)
+		dynamicsTbl := L.NewTable()
+		for key, value := range player.Dynamics {
+			L.SetField(dynamicsTbl, key, lua.LString(value))
+		}
+		L.SetField(playerTbl, "dynamics", dynamicsTbl)
+
 		playersTbl.Append(playerTbl)
 	}
 	L.SetField(tbl, "players", playersTbl)
 
 	return tbl
 }
+
 
 // Helper function to convert Lua table back to GameState
 func MapLuaTableToGameState(L *lua.LState, tbl *lua.LTable) types.GameState {
@@ -82,9 +91,45 @@ func MapLuaTableToGameState(L *lua.LState, tbl *lua.LTable) types.GameState {
 			Px:   int(L.GetField(playerTbl, "px").(lua.LNumber)),
 			Py:   int(L.GetField(playerTbl, "py").(lua.LNumber)),
 		}
+
+		// Dynamics (map of string -> string)
+		dynamicsTbl := L.GetField(playerTbl, "dynamics").(*lua.LTable)
+		dynamics := make(map[string]string)
+		dynamicsTbl.ForEach(func(key, value lua.LValue) {
+			dynamics[key.String()] = value.String()
+		})
+		player.Dynamics = dynamics
+
 		players = append(players, player)
 	})
 	gameState.Players = players
 
 	return gameState
+}
+
+
+func GameStateScriptRunner (L *lua.LState, scr string, fnname string, gs *types.GameState) *types.GameState {
+	err := L.DoString(scr)
+	
+	if err != nil {
+		panic(err)
+	}
+
+	luaGameState := MapGameStateToLuaTable(L, gs)
+
+	fn := L.GetGlobal(fnname)
+	if err := L.CallByParam(lua.P{
+		Fn:      fn,
+		NRet:    1,
+		Protect: true,
+	}, luaGameState); err != nil {
+		panic(err)
+	}
+
+	modifiedLuaGameState := L.Get(-1).(*lua.LTable)
+	L.Pop(1)
+
+	modifiedGameState := MapLuaTableToGameState(L, modifiedLuaGameState)
+
+	return &modifiedGameState
 }
