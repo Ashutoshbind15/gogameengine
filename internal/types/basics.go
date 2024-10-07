@@ -1,5 +1,7 @@
 package types
 
+import "time"
+
 type Arena struct {
 	X, Y int
 }
@@ -23,4 +25,16 @@ type GameState struct {
 	TimeLeft int
 	Arena    Arena
 	Players  []Player
+}
+
+type Session struct {
+	Id      string
+	UserId int
+	ValidTo time.Time
+}
+
+type User struct {
+	Id int
+	Username string
+	Password string
 }
