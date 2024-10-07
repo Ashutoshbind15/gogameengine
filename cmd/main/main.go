@@ -2,10 +2,14 @@ package main
 
 import (
 	"fmt"
+	"net/http"
 
+	"github.com/Ashutoshbind15/gogameengine/internal/data"
 	"github.com/Ashutoshbind15/gogameengine/internal/extrascripts"
 	"github.com/Ashutoshbind15/gogameengine/internal/scriptingmappers"
 	"github.com/Ashutoshbind15/gogameengine/internal/types"
+	"github.com/gorilla/mux"
+	"github.com/joho/godotenv"
 	lua "github.com/yuin/gopher-lua"
 )
 
@@ -36,7 +40,32 @@ func test() {
 
 }
 
+func initHandler (w http.ResponseWriter, rq *http.Request) {
+	fmt.Fprintf(w, "init")
+}
+
+
 func main() {
+	
 	fmt.Println("Game init")
-	test()
+
+	// test()
+
+	err := godotenv.Load()
+
+	if err != nil {
+		panic(err)
+	}
+
+	data.InitDB()
+
+	defer func(){
+		data.DbConn.Close()
+	}()
+
+	// data.InitTables()
+
+	r := mux.NewRouter()
+	r.HandleFunc("/", initHandler)
+	http.ListenAndServe(":3000", r)
 }
