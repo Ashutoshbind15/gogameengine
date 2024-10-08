@@ -9,13 +9,7 @@ import (
 
 // todo: export the types from the types package
 
-type GameMeta struct {
-	Title string
-	Description string
-	Url string
-}
-
-type GameResources struct {
+type GameInstanceResources struct {
 	Players []types.Player
 	Time time.Time
 	TimeStarted time.Time
@@ -30,9 +24,10 @@ type Game struct {
 	Clients []GameClient
 	Moves []types.GameAction // just in case if we want to reconstruct the state from the moves
 	GameInfo *GameMeta
-	Resources *GameResources
+	InstanceResources *GameInstanceResources
 	BroadCast chan []byte
 	ClientAction chan []byte // when clients join or leave
+	TurnBitmap string
 }
 
 func (gm *Game) Runner() {

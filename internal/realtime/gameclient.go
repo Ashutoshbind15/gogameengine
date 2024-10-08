@@ -1,6 +1,7 @@
 package realtime
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -11,8 +12,19 @@ import (
 type GameClient struct {
 	Connection *websocket.Conn
 	CurrentGame *Game
+	Cidx int
 	User types.User
 	Send chan []byte
+	SendErr chan []byte
+}
+
+type ClientRequest struct {
+	ActionOpCode string
+	Data string
+}
+
+func isAMove(opcode string) bool {
+	return opcode == "action" 
 }
 
 func (gc *GameClient) Reader() {
@@ -30,8 +42,18 @@ func (gc *GameClient) Reader() {
 			continue;
 		}
 
+		var rq ClientRequest;
 		res := buff[:n]
+
+		json.Unmarshal(res, &rq)
+
+		if isAMove(rq.ActionOpCode) && gc.CurrentGame.TurnBitmap[gc.Cidx] == '0' {
+			gc.SendErr <- []byte("Not allowed, wait for your turn")
+			return
+		}
+
 		gc.CurrentGame.BroadCast <- res
+
 	}
 }
 
