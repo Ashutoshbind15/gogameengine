@@ -8,3 +8,5 @@ require (
 	github.com/lib/pq v1.10.9
 	github.com/yuin/gopher-lua v1.1.1
 )
+
+require golang.org/x/net v0.30.0

@@ -38,3 +38,8 @@ type User struct {
 	Username string
 	Password string
 }
+
+type GameAction struct {
+	ActionOpCode string
+	ActionData   string // this could be a json string representing the coordinates or some extra info related to the action
+}

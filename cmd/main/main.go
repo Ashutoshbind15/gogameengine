@@ -14,8 +14,6 @@ func initHandler (w http.ResponseWriter, rq *http.Request) {
 	fmt.Fprintf(w, "init")
 }
 
-
-
 func main() {
 	
 	fmt.Println("Game init")
