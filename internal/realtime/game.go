@@ -24,17 +24,14 @@ type Game struct {
 	Moves []types.GameAction // just in case if we want to reconstruct the state from the moves
 	GameInfo *GameMeta
 	InstanceResources *GameInstanceResources
-	BroadCast chan []byte
+	Aggregator chan []byte
 	TurnBitmap string
 }
 
 func (gm *Game) Runner() {
-	for {
-		select {
-		case bcastmsg := <- gm.BroadCast:
-			for _,client := range gm.Clients {
-				client.Send <- bcastmsg
-			}
+	for bcastmsg := range gm.Aggregator {
+		for _, client := range gm.Clients {
+			client.Send <- bcastmsg
 		}
 	}
 }

@@ -101,18 +101,19 @@ func (gm *GameManager) Manage() {
 
 			// todo: find the game details and populate the initialization here using the gameid
 
-			tempGame := Game{
+			tempGame := &Game{
 				InstanceId: gameInfo.GameInstanceId,
 				Id: gameInfo.GameId,
 				Clients: []*GameClient{},
 				Gamestate: &types.GameState{},
 				Moves: []types.GameAction{},
-				BroadCast: make(chan []byte),
+				Aggregator: make(chan []byte),
 				TurnBitmap: "",
 				// GameInfo: gm.loadGamesMetadata(gameInfo.GameId),
 				GameInfo: &GameMeta{},
 			}
-			gm.Games = append(gm.Games, &tempGame)
+			gm.Games = append(gm.Games, tempGame)
+			go tempGame.Runner()
 		
 		case joinGameInfo := <- gm.JoinGame:
 			joinGameInfo.GameToJoin.Clients = append(joinGameInfo.GameToJoin.Clients, joinGameInfo.ClientToJoin)
@@ -129,9 +130,7 @@ func (gm *GameManager) Manage() {
 				fmt.Println("Cannot find the game with the gameId: ", gameInstanceId, err)
 			}
 
-			for _, client := range game.Clients {
-				client.Send <- []byte(gameInstanceId)
-			}
+			game.Aggregator <- []byte(gameInstanceId)
 
 		}
 

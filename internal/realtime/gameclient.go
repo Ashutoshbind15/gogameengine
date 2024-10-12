@@ -81,6 +81,7 @@ func (gc *GameClient) Reader(handlercloser chan bool) {
 
 			if err != nil {
 				fmt.Println("Cannot find game with the id: ", roomId, err)
+				continue
 			}
 
 			jrr := JoinRelay{
@@ -104,6 +105,7 @@ func (gc *GameClient) Reader(handlercloser chan bool) {
 
 			if err != nil {
 				fmt.Println("Error in creating the byte info for adding the new game: ", err)
+				continue;
 			}
 
 			Manager.Creategame <- ngb
@@ -111,7 +113,18 @@ func (gc *GameClient) Reader(handlercloser chan bool) {
 		} else if rq.ActionOpCode == "start" {
 			gameInstanceId := rq.Data
 			Manager.Startgame <- gameInstanceId
-		} 
+		} else if rq.ActionOpCode == "gamemove" {
+			res := strings.Split(rq.Data, ":")
+			gameInstanceId := res[0]
+			game, err := Manager.FindGameByInstanceId(gameInstanceId)
+
+			if err != nil {
+				fmt.Println("Cannot find the game with the gameId: ", gameInstanceId, err)
+				continue;
+			}
+
+			game.Aggregator <- []byte(res[1])
+		}
 		
 	}
 }
