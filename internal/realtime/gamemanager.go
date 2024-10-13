@@ -14,6 +14,18 @@ var (
 	Manager *GameManager
 )
 
+// what can a player do when his turn is there
+// i.e. the series of actions that he is allowed to take
+type TurnAction struct {
+	Title string
+	Cmd string
+	TurnId int
+	Script string
+	// turnaction[0] -> attack, 0, (gstate, pidx, aidx) -> player[pidx][aidx].exec(), for rest p of players, player[pidx][defend].exec()
+	// turnaction[1] -> pidx, def -> player[pidx].Dynamics[def].exec()
+	// turnaction[2] -> (pidx1, pidx2) -> swap card positions
+}
+
 type GameMeta struct {
 	Id string
 	Title string
@@ -21,6 +33,7 @@ type GameMeta struct {
 	Url string
 	Players []types.Player
 	Resources []GameInstanceResources
+	TurnActions []TurnAction
 }
 
 type GameManager struct {
@@ -68,6 +81,7 @@ func (gm *GameManager) FindGameByInstanceId (id string) (*Game, error) {
 func (gm *GameManager) Manage() {
 	for {
 		select {
+		// too many switch cases, have two manage funcs, but would it be ordered processing then?, we can listen to diff channels, but writes/broadcasts/channelmsgpassing is where things get tricky
 		case newClient := <- gm.AddClient:
 
 			client := &GameClient{

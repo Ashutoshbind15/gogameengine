@@ -69,8 +69,6 @@ func (gc *GameClient) Reader(handlercloser chan bool) {
 		res := buff[:n]
 		json.Unmarshal(res, &rq)
 
-		fmt.Println(rq)
-
 		if rq.ActionOpCode == "join" {
 
 			res := strings.Split(rq.Data, ":")
